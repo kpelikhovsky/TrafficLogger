@@ -1,59 +1,51 @@
 ﻿using System;
 using System.Windows;
-using System.Threading;
 using System.Net.NetworkInformation;
+using System.Timers;
 
 namespace TrafficLogger
 {
    /// <summary>
    /// Interaction logic for MainWindow.xaml
    /// </summary>
-
-   public delegate int onInfoUpdate(int value1 );
    
    public partial class MainWindow : Window
    {
-      private Thread thr;
-      AutoResetEvent autoEvent;
-      StatsChecker stchk;
-      TimerCallback tcb;
-      private Timer t;
+      private Timer UpdateTimer;
+      private StatCollector sCol;
 
       public MainWindow()
       {
          InitializeComponent();
-         
-         StatCollector a = new StatCollector();
-         foreach ( System.Object conn in a.getInterfaces())
+
+         sCol = new StatCollector();
+         foreach (System.Object conn in sCol.getInterfaces() )
          {
             SelConn.Items.Add(conn);
          }
-         autoEvent = new AutoResetEvent(false);
-         stchk = new StatsChecker(10);
-         tcb = stchk.UpdateStats;
-         t = new Timer( tcb, autoEvent, 1000, 250 );
-      }
 
-      public void onUpdate()
-      {
-         textBlock1.Text = "Fuck Yeah!";
+         UpdateTimer = new Timer(1000);
+         UpdateTimer.Elapsed += new ElapsedEventHandler(OnTimerEvent);
       }
 
       private void button1_Click(object sender, RoutedEventArgs e)
       {
-         autoEvent.WaitOne(5000, false);
-         t = new Timer(tcb, autoEvent, 1000, 250);
+         UpdateTimer.Enabled = true;
       }
 
       private void button2_Click(object sender, RoutedEventArgs e)
       {
-         t.Dispose();
+         UpdateTimer.Enabled = false;
       }
 
       private void GetIf_Click(object sender, RoutedEventArgs e)
       {
          
       }
-      
+
+      private void OnTimerEvent(object source, ElapsedEventArgs e)
+      {
+         textBlock1.Text = sCol.getReceivedPackets(NetworkInterfaceComponent.IPv4).ToString();
+      }
    }
 }

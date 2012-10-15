@@ -6,60 +6,7 @@ using System.Windows;
 
 namespace TrafficLogger
 {
-   public class StatsChecker
-   {
-      private long _pReceived, _pSent;
-      private StatCollector _sCol;
-
-      private int invokeCount;
-      private int maxCount;
-
-      public StatsChecker( int cnt )
-      {
-         _pReceived = 0;
-         _pSent = 0;
-         _sCol = new StatCollector();
-
-         invokeCount = 0;
-         maxCount = cnt;
-      }
-
-      public void UpdateStats(Object stateInfo)
-      {
-         AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
-         Console.WriteLine("{0} Checking status {1,2}.",
-             DateTime.Now.ToString("h:mm:ss.fff"),
-             (++invokeCount).ToString());
-
-         if (invokeCount == maxCount)
-         {
-            // Reset the counter and signal Main.
-            invokeCount = 0;
-            autoEvent.Set();
-         }
-      }
-
-      public void Run(object data)
-      {
-         //do
-         //{
-            MainWindow _w = (MainWindow)data;
-            //Thread.Sleep(1000);
-            _pReceived = _sCol.getReceivedPackets(NetworkInterfaceComponent.IPv4);
-            _pSent = _sCol.getSentPackets(NetworkInterfaceComponent.IPv4);
-            if (null != _w)
-            {
-                _w.onUpdate();
-
-                //_w.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() => { _w.textBlock1.Text = "Received Packets: " + _pReceived.ToString(); }));
-                _w.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() => { _w.textBlock2.Text = "Sent Packets: " + _pSent.ToString(); }));
-            }
-         //}
-         //while (true);
-      }
-   }
-
-   internal class StatCollector
+   class StatCollector
    {
       public System.Object[] getInterfaces()
       {
@@ -79,7 +26,7 @@ namespace TrafficLogger
          }
          return _cInterfaces;
       }
-      
+
       public long getReceivedPackets(NetworkInterfaceComponent version)
       {
          IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
