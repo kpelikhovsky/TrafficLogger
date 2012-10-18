@@ -2,11 +2,33 @@
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.Windows.Threading;
 using System.Windows;
 
 namespace TrafficLogger
 {
-   class StatCollector
+   public class StatCollectorCtrl
+   {
+      MainWindow pWin;
+      public StatCollectorCtrl(MainWindow win)
+      {
+         pWin = win;
+      }
+
+      public void Run()
+      {
+         for (int i = 0; i < 10; ++i)
+         {
+            Thread.Sleep(1000);
+            String str = "Delegate was called " + i.ToString();
+            pWin.Dispatcher.Invoke(pWin.UpdDelegate, DispatcherPriority.Normal, str);
+         }
+      }  
+   }
+   
+   
+   
+   internal class StatCollector
    {
       public System.Object[] getInterfaces()
       {

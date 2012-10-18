@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Net.NetworkInformation;
-using System.Timers;
+using System.Threading;
 
 namespace TrafficLogger
 {
@@ -11,8 +11,11 @@ namespace TrafficLogger
    
    public partial class MainWindow : Window
    {
-      private Timer UpdateTimer;
+      private Thread myThread = null;
       private StatCollector sCol;
+
+      public delegate void UpdateStat( string str );
+      public UpdateStat UpdDelegate;
 
       public MainWindow()
       {
@@ -24,18 +27,19 @@ namespace TrafficLogger
             SelConn.Items.Add(conn);
          }
 
-         UpdateTimer = new Timer(1000);
-         UpdateTimer.Elapsed += new ElapsedEventHandler(OnTimerEvent);
+         UpdDelegate = new UpdateStat(UpdateStatMethod);
       }
 
-      private void button1_Click(object sender, RoutedEventArgs e)
+      private void buttonStart_Click(object sender, RoutedEventArgs e)
       {
-         UpdateTimer.Enabled = true;
+         StatCollectorCtrl ctrl = new StatCollectorCtrl(this);
+         myThread = new Thread(new ThreadStart(ctrl.Run));
+         myThread.Start();
       }
 
-      private void button2_Click(object sender, RoutedEventArgs e)
+      private void buttonStop_Click(object sender, RoutedEventArgs e)
       {
-         UpdateTimer.Enabled = false;
+         if (null != myThread) myThread.Abort();
       }
 
       private void GetIf_Click(object sender, RoutedEventArgs e)
@@ -43,9 +47,9 @@ namespace TrafficLogger
          
       }
 
-      private void OnTimerEvent(object source, ElapsedEventArgs e)
+      public void UpdateStatMethod( string str )
       {
-         textBlock1.Text = sCol.getReceivedPackets(NetworkInterfaceComponent.IPv4).ToString();
+         textBlock1.Text = str;
       }
    }
 }
