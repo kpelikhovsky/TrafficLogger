@@ -9,51 +9,75 @@ namespace TrafficLogger
 {
    public class StatCollectorCtrl
    {
-      MainWindow pWin;
-      public StatCollectorCtrl(MainWindow win)
+      private MainWindow pWin;
+      private string nInterface;
+      private int mInterval;
+      private StatCollector sCol;
+      private bool isCtrlEnabled;
+
+      public StatCollectorCtrl(MainWindow win, string nIn, int mInt)
       {
          pWin = win;
+         nInterface = nIn;
+         mInterval = mInt;
+         sCol = new StatCollector();
+         isCtrlEnabled = true;
+      }
+
+      public bool IsCtrlEnabled
+      {
+         set
+         {
+            isCtrlEnabled = value;
+         }
+         
+         get
+         {
+            return isCtrlEnabled;
+         }
       }
 
       public void Run()
       {
-         for (int i = 0; i < 10; ++i)
+         do
          {
-            Thread.Sleep(1000);
-            String str = "Delegate was called " + i.ToString();
+            Thread.Sleep(mInterval);
+            String str = "Packets received: " + sCol.getReceivedPackets(nInterface);
             pWin.Dispatcher.Invoke(pWin.UpdDelegate, DispatcherPriority.Normal, str);
          }
+         while (isCtrlEnabled);
       }  
    }
    
-   
-   
    internal class StatCollector
    {
-      public System.Object[] getInterfaces()
+      public String[] getInterfaces()
       {
          IPGlobalProperties computerProperties = IPGlobalProperties.GetIPGlobalProperties();
          NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
 
-         System.Object[] _cInterfaces = new System.Object[nics.Length];
+         String[] cInterfaces = new String[nics.Length];
          UInt16 it = 0;
          foreach (NetworkInterface adapter in nics)
          {
             OperationalStatus sts = adapter.OperationalStatus;
             if (adapter.OperationalStatus == OperationalStatus.Up)
             {
-               _cInterfaces[it] = adapter.Name;
+               cInterfaces[it] = adapter.Name;
                ++it;
             }
          }
-         return _cInterfaces;
+
+         return cInterfaces;
       }
 
-      public long getReceivedPackets(NetworkInterfaceComponent version)
+      public long getReceivedPackets( String InterfaceName )
       {
          IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
-         IPGlobalStatistics ipstat = null;
-         switch (version)
+         IPGlobalStatistics ipstat = properties.GetIPv4GlobalStatistics();
+
+         //NetworkInterface;
+         /*switch (InterfaceName)
          {
             case NetworkInterfaceComponent.IPv4:
                ipstat = properties.GetIPv4GlobalStatistics();
@@ -64,7 +88,7 @@ namespace TrafficLogger
             default:
                throw new ArgumentException("version");
                //    break;
-         }
+         }*/
         
          return ipstat.ReceivedPackets;
       }
