@@ -16,7 +16,7 @@ namespace TrafficLogger
       private StatCollectorCtrl ctrl;
       private System.Windows.Controls.ListView lw = new System.Windows.Controls.ListView();
 
-      public delegate void UpdateStat( String str);
+      public delegate void UpdateStat( long received, long sent );
       public UpdateStat UpdDelegate;
 
       public MainWindow()
@@ -24,16 +24,12 @@ namespace TrafficLogger
          InitializeComponent();
 
          sCol = new StatCollector();
-         SelConn.Items.Insert(0, "Please select an interface");
-         SelConn.SelectedIndex = 0;
-
-         
+       
          InterfacesExpander.Content = lw;
          lw.SelectionChanged += lw_SelectionChanged;
 
-         foreach (String conn in sCol.getInterfaces() )
+         foreach (String conn in sCol.getActiveInterfaces())
          {
-            SelConn.Items.Add(conn);
             lw.Items.Add(conn);
          }
 
@@ -48,9 +44,9 @@ namespace TrafficLogger
 
       private void buttonStart_Click(object sender, RoutedEventArgs e)
       {
-         String SelectedInterface = SelConn.SelectionBoxItem.ToString();
+         String SelectedInterface = InterfacesExpander.Header.ToString();
 
-         if ("Please select an interface" != SelectedInterface)
+         if ( "Please select an interface" != SelectedInterface)
          {
             ctrl = new StatCollectorCtrl(this, SelectedInterface, 1000);
             myThread = new Thread(new ThreadStart(ctrl.Run));
@@ -58,7 +54,7 @@ namespace TrafficLogger
          }
          else
          {
-            MessageBox.Show("Please select an interface");
+            MessageBox.Show( "Please select an interface" );
          }
       }
 
@@ -71,9 +67,10 @@ namespace TrafficLogger
          }
       }
 
-      public void UpdateStatMethod( String str)
+      public void UpdateStatMethod( long received, long sent )
       {
-         textBlock1.Text = str;
+         tbReceived.Text = "Received Mb: " + (received / 1024).ToString();
+         tbSent.Text = "Sent Mb: " + (sent / 1024).ToString();
       }
    }
 }
