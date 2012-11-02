@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Net.NetworkInformation;
 using System.Threading;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace TrafficLogger
 {
@@ -14,8 +16,12 @@ namespace TrafficLogger
       private Thread myThread = null;
       private StatCollector sCol;
       private StatCollectorCtrl ctrl;
-      private System.Windows.Controls.ListView lw = new System.Windows.Controls.ListView();
+      private ListView lw = new ListView();
 
+      // Create tray icon
+      private TaskbarIcon tbi; 
+
+      // Delegate method for data update
       public delegate void UpdateStat( long received, long sent );
       public UpdateStat UpdDelegate;
 
@@ -24,7 +30,8 @@ namespace TrafficLogger
          InitializeComponent();
 
          sCol = new StatCollector();
-       
+         
+         // Init listview for expander
          InterfacesExpander.Content = lw;
          lw.SelectionChanged += lw_SelectionChanged;
 
@@ -33,7 +40,13 @@ namespace TrafficLogger
             lw.Items.Add(conn);
          }
 
+         // Set delagate method 
          UpdDelegate = new UpdateStat(UpdateStatMethod);
+
+         // Init tray icon
+         tbi = new TaskbarIcon();
+         tbi.Icon = Properties.Resources.DefaultIcon;
+         tbi.ToolTipText = "hello world";
       }
 
       void lw_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
